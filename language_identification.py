@@ -8,6 +8,8 @@ ap.add_argument('-s', '--seed', type=int, default=53)
 args = vars(ap.parse_args())
 np.random.seed(args['seed'])
 
+UNKNOWN_LETTER = "<UNK>"
+
 
 def read_data(filename='devel.txt', return_unlabeled=False):
     train_data = []
@@ -55,29 +57,36 @@ def split_train_test(data, labels, test_split=0.1):
 
 def train_bayes(train_data, train_labels):
     language_statistics = {}
+    all_letters = []
     for i in range(len(train_data)):
         sentence = train_data[i]
         label = train_labels[i]
         letters = list(sentence)
         letters = np.array(letters)
         letters, counts = np.unique(letters, return_counts=True)
+        all_letters.extend(letters)
         language_statistics[label] = language_statistics.get(label, {})
         for l, c in zip(letters, counts):
             language_statistics[label][l] = language_statistics[label].get(l, 0) + c
 
+    #Statistics with Laplace Smoothing
+    all_letters = np.array(all_letters)
+    all_letters, letter_counts = np.unique(all_letters, return_counts=True)
     for k, v in language_statistics.items():
         total_letter_count = np.sum(list(language_statistics[k].values()))
         for l, c in language_statistics[k].items():
-            language_statistics[k][l] = language_statistics[k][l] / total_letter_count
+            language_statistics[k][l] = (language_statistics[k][l] + 1) / (total_letter_count+ len(all_letters))
+        language_statistics[k][UNKNOWN_LETTER] = 1/(total_letter_count+ len(all_letters))
+    all_letters = dict(zip(all_letters, letter_counts))
+    return language_statistics, all_letters
 
-    return language_statistics
 
 
 data, labels = read_data(filename=args['filename'])
 train_data, test_data, train_labels, test_labels = split_train_test(data, labels)
 
-languages_statistics = train_bayes(train_data, train_labels)
-languages = list(languages_statistics.keys())
+language_statistics, all_letters = train_bayes(train_data, train_labels)
+languages = list(language_statistics.keys())
 
 predictions = []
 for sentence in test_data:
@@ -86,7 +95,7 @@ for sentence in test_data:
     for language in languages:
         probabilities[language] = 1.0
         for letter in letters:
-            probabilities[language] *= languages_statistics[language].get(letter, 0.0000001)
+            probabilities[language] *= language_statistics[language].get(letter, language_statistics[language][UNKNOWN_LETTER])
 
     predicted_class = languages[0]
     max_prob = 0
