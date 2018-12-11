@@ -80,6 +80,29 @@ def train_bayes(train_data, train_labels):
     all_letters = dict(zip(all_letters, letter_counts))
     return language_statistics, all_letters
 
+def calculate_statistics(languages, y_predicted, y_expected):
+    statistics = {}
+    y_predicted = np.array(y_predicted)
+    y_expected = np.array(y_expected)
+    for language in languages:
+        statistics[language] = {}
+        true_positive = np.sum(y_predicted[y_expected == language] == language)
+        statistics[language]["TP"] = true_positive
+        true_negative = np.sum(y_predicted[y_expected != language] != language)
+        statistics[language]["TN"] = true_negative
+        false_positive = np.sum(y_predicted[y_expected != language] == language)
+        statistics[language]["FP"] = false_positive
+        false_negative = np.sum(y_predicted[y_expected == language] != language)
+        statistics[language]["FN"] = false_negative
+        precision = true_positive / (true_positive + true_negative)
+        recall = true_positive / (true_positive + false_negative)
+        f_score = (2*precision*recall) / (precision + recall)
+        statistics[language]["Precision"] = precision
+        statistics[language]["Recall"] = recall
+        statistics[language]["F-measure"] = f_score
+
+    return statistics
+
 
 
 data, labels = read_data(filename=args['filename'])
@@ -110,4 +133,5 @@ for a, b in zip(predictions, test_labels):
     if a == b:
         true += 1
 
-print(true / len(predictions))
+statistics = calculate_statistics(languages, predictions, test_labels)
+print(statistics)
