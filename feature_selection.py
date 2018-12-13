@@ -1,12 +1,17 @@
 import numpy as np
 import re
 import collections
+import argparse
 
 feature_label = 0
 lang_id = 0
 feature_dict = {}
 language_id_dict = {}
 word_counts = {}
+
+ap = argparse.ArgumentParser()
+ap.add_argument('-p', '--part', required=True)
+args = vars(ap.parse_args())
 
 def read_data(filename='Corpus.txt', return_unlabeled=False):
     output_array = []
@@ -24,9 +29,10 @@ def read_data(filename='Corpus.txt', return_unlabeled=False):
             output_line += get_language_id(label)
             
             sentence_features = char_feature(sentence, sentence_features)
-            sentence_features = word_count(sentence, sentence_features)
-            sentence_features = sentence_length(sentence, sentence_features)
-            sentence_features = bigrams(sentence, sentence_features)
+            if args['part'] == 'c':
+                sentence_features = word_count(sentence, sentence_features)
+                sentence_features = sentence_length(sentence, sentence_features)
+                sentence_features = bigrams(sentence, sentence_features)
 
             output_line += get_line_from_features(sentence_features)
             output_array.append(output_line)
