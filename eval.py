@@ -1,3 +1,7 @@
+##
+##  Class for evaluationg and get statistics of SVM results
+##
+##
 import numpy as np
 from pandas_ml import ConfusionMatrix
 import matplotlib.pyplot as plt
