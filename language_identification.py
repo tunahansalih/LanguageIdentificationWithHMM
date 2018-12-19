@@ -121,7 +121,6 @@ def calculate_statistics(languages, y_predicted, y_expected):
     statistics["overall"]["Recall"] = sum_tp / (sum_tp + sum_fn)
     statistics["overall"]["F-measure"] = (2 * statistics["overall"]["Precision"] * statistics["overall"]["Recall"]) / (
             statistics["overall"]["Precision"] + statistics["overall"]["Recall"])
-
     return statistics
 
 
@@ -164,6 +163,13 @@ for a, b in zip(predictions, test_labels):
 
 statistics = calculate_statistics(languages, predictions, test_labels)
 
+preds = np.array(predictions)
+labs = np.array(test_labels)
+
+tru = (preds == labs)
+result = sum(tru)/len(tru)
+
+
 if args["output"]:
     print_statictics(statistics, args["output"])
 
@@ -171,3 +177,5 @@ confusion_matrix = ConfusionMatrix(test_labels, predictions)
 print("Confusion matrix:\n%s" % confusion_matrix)
 confusion_matrix.plot()
 plt.show()
+
+print(f"Accuracy: {result*100:.2f}%")
