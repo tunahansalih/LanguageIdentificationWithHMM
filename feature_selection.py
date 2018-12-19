@@ -126,3 +126,5 @@ test_data = data[int(len(data)*0.9):]
 write_array(train_data, "train.txt")
 write_array(test_data, "test.txt")
 
+print(language_id_dict)
+
